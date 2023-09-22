@@ -1,8 +1,29 @@
 import styled from "styled-components";
 import Link from "next/link";
 import Layout from "../components/Layout";
+import useSWR from "swr";
+
+const fetcher = async (url) => {
+  const res = await fetch(url);
+  // If the status code is not in the range 200-299,
+  // we still try to parse and throw it.
+  if (!res.ok) {
+    const error = new Error("An error occurred while fetching the data.");
+    // Attach extra info to the error object.
+    error.info = await res.json();
+    error.status = res.status;
+    console.log(error);
+    throw error;
+  }
+};
+
+const URL = "https://swapi.dev/api/people/";
 
 export default function HomePage() {
+  const { data: people, isLoading, error } = useSWR(URL, fetcher);
+
+  console.log(people);
+
   return (
     <Layout>
       <h1>React Data Fetching: Star Wars</h1>
