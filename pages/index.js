@@ -2,6 +2,7 @@ import styled from "styled-components";
 import Link from "next/link";
 import Layout from "../components/Layout";
 import useSWR from "swr";
+import React from "react";
 
 const fetcher = async (url) => {
   const res = await fetch(url);
@@ -15,32 +16,38 @@ const fetcher = async (url) => {
     console.log(error);
     throw error;
   }
+  return res.json();
 };
 
 const URL = "https://swapi.dev/api/people/";
 
 export default function HomePage() {
-  const { data: people, isLoading, error } = useSWR(URL, fetcher);
-
-  console.log(people);
+  const { data, isLoading, error } = useSWR(URL, fetcher);
+  console.log(data);
 
   return (
     <Layout>
       <h1>React Data Fetching: Star Wars</h1>
-      <List>
-        <li>
-          <StyledLink href="/characters/1">Luke Skywalker</StyledLink>
-        </li>
-        <li>
-          <StyledLink href="/characters/2">C-3PO</StyledLink>
-        </li>
-        <li>
-          <StyledLink href="/characters/3">R2-D2</StyledLink>
-        </li>
-        <li>
-          <StyledLink href="/characters/4">Darth Vader</StyledLink>
-        </li>
-      </List>
+      {isLoading && <p>isLoading...</p>}
+      {error && (
+        <>
+          <span>{error.status}</span>
+          <p>{error.message}</p>
+        </>
+      )}
+      {data && (
+        <List>
+          {data.results.map((person, index) => (
+            <React.Fragment key={person.name}>
+              <li>
+                <StyledLink href={`characters/${index + 1}`}>
+                  {index < 9 ? `0${index + 1}` : `${index + 1}`} {person.name}
+                </StyledLink>
+              </li>
+            </React.Fragment>
+          ))}
+        </List>
+      )}
     </Layout>
   );
 }
